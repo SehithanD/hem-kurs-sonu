@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Halk Eğitimi Merkezi - Kurs Sonu İşlemleri</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- JSZip CDN (Şablon biçimlendirmesini %100 koruyan cerrahi OOXML yama motoru) -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            navy: {
+              50: '#f0f4f8',
+              100: '#d9e2ec',
+              200: '#bcccdc',
+              600: '#243b53',
+              700: '#102a43',
+              800: '#0b2239',
+              900: '#071728',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* İnce kaydırma çubuğu */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    input[type="number"]::-webkit-inner-spin-button { opacity: 0.7; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- ================= ÜST KURUMSAL HEADER ================= -->
+  <header class="bg-navy-800 text-white shadow-lg sticky top-0 z-30 border-b border-navy-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <!-- Logo & Başlık -->
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+            <svg class="w-6 h-6 text-sky-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-base sm:text-lg font-bold tracking-tight">Kurs Sonu İşlemleri</h1>
+              <span id="autosaveBadge" class="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                Otomatik Kayıt
+              </span>
+            </div>
+            <p class="text-xs text-slate-300">Halk Eğitimi Merkezi — Tarayıcı Tabanlı Excel Otomasyon Sistemi</p>
+          </div>
+        </div>
+
+        <!-- Hızlı Araç Butonları -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="fillSampleData()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white transition shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Örnek Veri Doldur
+          </button>
+          <button type="button" onclick="exportDraftJSON()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/20 text-white border border-white/15 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Taslak İndir (JSON)
+          </button>
+          <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/20 text-white border border-white/15 transition cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Taslak Yükle (JSON)
+            <input type="file" id="jsonImportInput" accept=".json" class="hidden" onchange="importDraftJSON(event)" />
+          </label>
+          <button type="button" onclick="openResetModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-rose-600/80 hover:bg-rose-600 text-white transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Formu Temizle
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= 7 ADIMLI İLERLEME ÇUBUĞU (STEPPER) ================= -->
+  <nav class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 overflow-x-auto">
+      <ol id="stepperContainer" class="flex items-center justify-between min-w-[700px] gap-2">
+        <!-- JS ile dinamik oluşturulacak -->
+      </ol>
+    </div>
+  </nav>
+
+  <!-- ================= ANA İÇERİK ALANI ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div id="stepContent" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-7">
+      <!-- Aktif adımın içeriği JS ile buraya render edilir -->
+    </div>
+
+    <!-- Alt Gezinme Butonları -->
+    <div class="mt-6 flex items-center justify-between gap-4">
+      <button id="prevBtn" type="button" onclick="prevStep()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Önceki Adım
+      </button>
+
+      <div id="stepIndicatorText" class="text-xs sm:text-sm font-medium text-slate-500">
+        Adım 1 / 7
+      </div>
+
+      <button id="nextBtn" type="button" onclick="nextStep()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-navy-700 text-white hover:bg-navy-800 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
+        Sonraki Adım
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- ================= ALT BİLGİ ================= -->
+  <footer class="bg-white border-t border-slate-200 mt-8 py-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+      <span>Tüm veriler yalnızca kendi tarayıcınızda işlenir; hiçbir sunucuya gönderilmez (KVKK Uyumlu).</span>
+      <span>Halk Eğitimi Merkezi Kurs Sonu Otomasyonu</span>
+    </div>
+  </footer>
+
+  <!-- ================= MODAL: TOPLU İSİM YAPIŞTIR ================= -->
+  <div id="bulkPasteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+      <div class="px-6 py-4 bg-navy-800 text-white flex items-center justify-between">
+        <h3 class="font-bold text-base">Toplu Kursiyer Yapıştır</h3>
+        <button type="button" onclick="closeBulkPasteModal()" class="text-slate-300 hover:text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Her satıra bir kursiyer adı-soyadı gelecek şekilde listeyi yapıştırın. (İsteğe bağlı olarak satırda virgül veya sekme ile T.C. ilk 4 hane ve cinsiyet de yazabilirsiniz: <span class="font-mono bg-slate-100 px-1 rounded">Ayşe Yılmaz, 1234, Bayan</span>). Maksimum 25 kursiyer eklenebilir.
+        </p>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Varsayılan Cinsiyet (belirtilmemişse)</label>
+          <select id="bulkDefaultGender" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-navy-600 focus:border-navy-600 outline-none">
+            <option value="Bayan">Bayan</option>
+            <option value="Erkek">Erkek</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Kursiyer Listesi</label>
+          <textarea id="bulkPasteTextarea" rows="7" placeholder="Ahmet Yılmaz&#10;Ayşe Demir&#10;Mehmet Kaya" class="w-full rounded-xl border border-slate-300 p-3 text-sm font-mono focus:ring-2 focus:ring-navy-600 focus:border-navy-600 outline-none"></textarea>
+        </div>
+      </div>
+      <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+        <button type="button" onclick="closeBulkPasteModal()" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-200 transition">İptal</button>
+        <button type="button" onclick="applyBulkPaste()" class="px-4 py-2 rounded-xl text-sm font-semibold bg-navy-700 text-white hover:bg-navy-800 transition">Listeye Ekle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: FORMU TEMİZLE ONAY ================= -->
+  <div id="resetModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200">
+      <div class="p-6">
+        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900">Tüm Formu Temizle</h3>
+        <p class="text-sm text-slate-600 mt-2">
+          Girdiğiniz tüm kurs bilgileri, kursiyerler, modüller ve sınav notları silinerek varsayılan boş duruma dönülecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?
+        </p>
+      </div>
+      <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+        <button type="button" onclick="closeResetModal()" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-200 transition">Vazgeç</button>
+        <button type="button" onclick="confirmResetForm()" class="px-4 py-2 rounded-xl text-sm font-semibold bg-rose-600 text-white hover:bg-rose-700 transition">Evet, Temizle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST BİLDİRİM ALANI ================= -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- ================= UYGULAMA MANTIĞI (JAVASCRIPT) ================= -->
+  <script>
+    // =========================================================================
+    // 1. SABİTLER VE VARSAYILAN VERİ YAPISI
+    // =========================================================================
+    const STORAGE_KEY = 'hem_kurs_sonu_state_v1';
+    const TEMPLATE_FILENAME = 'yeni kurs sonu işlemleri programı.xlsx';
+    const MAX_TRAINEES = 25;
+    const MAX_MODULES = 25;
+    const MAX_CRITERIA = 15;
+
+    const STEPS = [
+      { id: 1, title: 'Kurs Bilgileri', short: 'Kurs' },
+      { id: 2, title: 'Kursiyerler', short: 'Kursiyer' },
+      { id: 3, title: 'Modüller', short: 'Modül' },
+      { id: 4, title: 'Muaf & Devamsız', short: 'Devamsız' },
+      { id: 5, title: 'Yazılı Notları', short: 'Yazılı' },
+      { id: 6, title: 'Uygulama Notları', short: 'Uygulama' },
+      { id: 7, title: 'Bitirme & İndir', short: 'İndir' }
+    ];
+
+    function createDefaultModule(idx) {
+      return {
+        name: '',
+        hours: '',
+        examDate: '',
+        examHour: 10,
+        examMinute: 0,
+        hasWritten: true,
+        secondExamType: ''
+      };
+    }
+
+    function createDefaultState() {
+      return {
+        currentStep: 1,
+        activeGradeModuleIdx: 0,
+        activeAppModuleIdx: 0,
+        course: {
+          institutionName: 'GÜNEYSU HALK EĞİTİMİ MERKEZİ MÜDÜRLÜĞÜ',
+          academicYear: '2026-2027 EĞİTİM ÖĞRETİM YILI',
+          teacherName: '',
+          courseName: '',
+          courseDays: '',
+          totalHours: '',
+          courseNumber: '',
+          startDate: '',
+          endDate: '',
+          moduleCount: 1,
+          passingGrade: 50,
+          address: 'Merkez Bina 1. Kat 20 Kapı Nolu Sınıf',
+          vicePrincipal: 'Hüseyin CİVELEK',
+          principal: 'Kadir TARAKÇI'
+        },
+        trainees: [],
+        modules: [createDefaultModule(0)],
+        muafDevamsiz: {},
+        writtenGrades: {},
+        appCriteria: {},
+        appScores: {},
+        completion: {
+          cancelledFemale: 0,
+          cancelledMale: 0
+        }
+      };
+    }
+
+    let state = loadState();
+    let templateBuffer = null;
+    let templateSourceLabel = '';
+    let templateAutoChecked = false;
+    let isGeneratingExcel = false;
+
+    // =========================================================================
+    // 2. DURUM YÖNETİMİ VE YARDIMCI FONKSİYONLAR
+    // =========================================================================
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return createDefaultState();
+        const parsed = JSON.parse(raw);
+        const def = createDefaultState();
+        const merged = {
+          ...def,
+          ...parsed,
+          course: { ...def.course, ...(parsed.course || {}) },
+          completion: { ...def.completion, ...(parsed.completion || {}) },
+          trainees: Array.isArray(parsed.trainees) ? parsed.trainees.slice(0, MAX_TRAINEES) : [],
+          modules: Array.isArray(parsed.modules) && parsed.modules.length > 0 ? parsed.modules : def.modules,
+          muafDevamsiz: parsed.muafDevamsiz || {},
+          writtenGrades: parsed.writtenGrades || {},
+          appCriteria: parsed.appCriteria || {},
+          appScores: parsed.appScores || {}
+        };
+        merged.currentStep = Math.max(1, Math.min(STEPS.length, Number(merged.currentStep) || 1));
+        merged.course.moduleCount = Math.max(1, Math.min(MAX_MODULES, Number(merged.course.moduleCount) || 1));
+        while (merged.modules.length < merged.course.moduleCount) {
+          merged.modules.push(createDefaultModule(merged.modules.length));
+        }
+        return merged;
+      } catch (err) {
+        console.warn('Kayıtlı durum okunamadı, varsayılan başlatılıyor:', err);
+        return createDefaultState();
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        const badge = document.getElementById('autosaveBadge');
+        if (badge) {
+          badge.classList.add('ring-2', 'ring-emerald-300/60');
+          setTimeout(() => badge.classList.remove('ring-2', 'ring-emerald-300/60'), 500);
+        }
+      } catch (err) {
+        console.warn('localStorage kaydı başarısız:', err);
+      }
+    }
+
+    function ensureModuleArrayLength() {
+      const target = Math.max(1, Math.min(MAX_MODULES, Number(state.course.moduleCount) || 1));
+      while (state.modules.length < target) {
+        state.modules.push(createDefaultModule(state.modules.length));
+      }
+    }
+
+    function ensureAppCriteria(mIdx) {
+      const key = String(mIdx);
+      if (!Array.isArray(state.appCriteria[key]) || state.appCriteria[key].length === 0) {
+        state.appCriteria[key] = [
+          { name: 'Kriter 1', maxScore: 25 },
+          { name: 'Kriter 2', maxScore: 25 },
+          { name: 'Kriter 3', maxScore: 25 },
+          { name: 'Kriter 4', maxScore: 25 }
+        ];
+      }
+      return state.appCriteria[key];
+    }
+
+    function escapeHtml(val) {
+      if (val === null || val === undefined) return '';
+      return String(val)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const styles = {
+        success: 'bg-emerald-600 text-white border-emerald-700',
+        error: 'bg-rose-600 text-white border-rose-700',
+        warning: 'bg-amber-500 text-white border-amber-600',
+        info: 'bg-navy-800 text-white border-navy-900'
+      };
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-lg border text-xs sm:text-sm font-medium transition-all duration-300 ${styles[type] || styles.info}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3600);
+    }
+
+    function getStudentAppTotal(mIdx, tIdx) {
+      const criteria = ensureAppCriteria(mIdx);
+      let hasAny = false;
+      let total = 0;
+      for (let k = 0; k < criteria.length; k++) {
+        const val = state.appScores[`${mIdx}_${tIdx}_${k}`];
+        if (val !== undefined && val !== '' && val !== null && !isNaN(Number(val))) {
+          total += Number(val);
+          hasAny = true;
+        }
+      }
+      return hasAny ? Math.round(total * 100) / 100 : null;
+    }
+
+    function evaluateStudentOverall(tIdx) {
+      const mCount = state.course.moduleCount;
+      const passing = Number(state.course.passingGrade) || 50;
+      let hasDevamsiz = false;
+      let hasFailed = false;
+      let evaluatedCount = 0;
+
+      for (let m = 0; m < mCount; m++) {
+        const mod = state.modules[m];
+        const md = state.muafDevamsiz[`${tIdx}_${m}`] || '';
+        if (md === 'Devamsız') {
+          hasDevamsiz = true;
+          evaluatedCount++;
+          continue;
+        }
+        if (md === 'Muaf') {
+          evaluatedCount++;
+          continue;
+        }
+
+        const hasW = Boolean(mod.hasWritten);
+        const hasA = Boolean(mod.secondExamType);
+        if (!hasW && !hasA) continue;
+
+        let wNum = null;
+        if (hasW) {
+          const rawW = state.writtenGrades[`${m}_${tIdx}`];
+          if (rawW === 'DEVAMSIZ') {
+            hasDevamsiz = true;
+            evaluatedCount++;
+            continue;
+          } else if (rawW === 'MUAF') {
+            evaluatedCount++;
+            continue;
+          } else if (rawW === 'GİRMEDİ') {
+            hasFailed = true;
+            evaluatedCount++;
+            continue;
+          } else if (rawW !== undefined && rawW !== '' && rawW !== null && !isNaN(Number(rawW))) {
+            wNum = Number(rawW);
+          }
+        }
+
+        let aNum = null;
+        if (hasA) {
+          aNum = getStudentAppTotal(m, tIdx);
+        }
+
+        let modAvg = null;
+        if (hasW && hasA) {
+          if (wNum !== null && aNum !== null) modAvg = (wNum + aNum) / 2;
+          else if (wNum !== null) modAvg = wNum;
+          else if (aNum !== null) modAvg = aNum;
+        } else if (hasW) {
+          modAvg = wNum;
+        } else if (hasA) {
+          modAvg = aNum;
+        }
+
+        if (modAvg !== null) {
+          evaluatedCount++;
+          if (modAvg < passing) hasFailed = true;
+        }
+      }
+
+      if (hasDevamsiz) return { overallStatus: 'devamsiz' };
+      if (hasFailed) return { overallStatus: 'failed' };
+      if (evaluatedCount > 0) return { overallStatus: 'passed' };
+      return { overallStatus: 'pending' };
+    }
+
+    // =========================================================================
+    // 3. ANA RENDER VE ADIM GEZİNTİSİ
+    // =========================================================================
+    function renderStepper() {
+      const container = document.getElementById('stepperContainer');
+      if (!container) return;
+      container.innerHTML = STEPS.map((step, idx) => {
+        const isCurrent = step.id === state.currentStep;
+        const isCompleted = step.id < state.currentStep;
+        return `
+          <li class="flex-1 flex items-center">
+            <button type="button" onclick="goToStep(${step.id})"
+              class="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl border text-left transition ${
+                isCurrent
+                  ? 'bg-navy-700 text-white border-navy-800 shadow-sm'
+                  : isCompleted
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+              }">
+              <span class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                isCurrent
+                  ? 'bg-white/20 text-white'
+                  : isCompleted
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-200 text-slate-600'
+              }">${isCompleted ? '✓' : step.id}</span>
+              <span class="text-xs font-semibold truncate">${step.title}</span>
+            </button>
+          </li>
+        `;
+      }).join('');
+    }
+
+    function render() {
+      ensureModuleArrayLength();
+      renderStepper();
+
+      const contentEl = document.getElementById('stepContent');
+      if (contentEl) {
+        switch (state.currentStep) {
+          case 1: contentEl.innerHTML = renderStep1(); break;
+          case 2: contentEl.innerHTML = renderStep2(); break;
+          case 3: contentEl.innerHTML = renderStep3(); break;
+          case 4: contentEl.innerHTML = renderStep4(); break;
+          case 5: contentEl.innerHTML = renderStep5(); break;
+          case 6: contentEl.innerHTML = renderStep6(); break;
+          case 7: contentEl.innerHTML = renderStep7(); break;
+          default: contentEl.innerHTML = renderStep1();
+        }
+      }
+
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const indicator = document.getElementById('stepIndicatorText');
+      if (prevBtn) prevBtn.disabled = state.currentStep <= 1;
+      if (nextBtn) nextBtn.disabled = state.currentStep >= STEPS.length;
+      if (indicator) indicator.textContent = `Adım ${state.currentStep} / ${STEPS.length}`;
+    }
+
+    function goToStep(stepId) {
+      state.currentStep = Math.max(1, Math.min(STEPS.length, Number(stepId) || 1));
+      saveState();
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextStep() {
+      if (state.currentStep < STEPS.length) goToStep(state.currentStep + 1);
+    }
+
+    function prevStep() {
+      if (state.currentStep > 1) goToStep(state.currentStep - 1);
+    }
+
+    // =========================================================================
+    // 4. ADIM 1: KURS BİLGİLERİ (BAŞLIK SAYFASI)
+    // =========================================================================
+    function renderStep1() {
+      const c = state.course;
+      return `
+        <div class="mb-6 pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h2 class="text-xl font-bold text-navy-900">1. Kurs Genel Bilgileri</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Buraya girdiğiniz bilgiler Excel'deki <strong>BAŞLIK</strong> sayfasına yazılır ve tüm tutanaklara otomatik yansır.</p>
+          </div>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-navy-50 text-navy-700 border border-navy-200 self-start">
+            BAŞLIK Sayfası
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kurum Adı <span class="text-slate-400 font-normal">(B2)</span></label>
+            <input type="text" value="${escapeHtml(c.institutionName)}"
+              oninput="updateCourseField('institutionName', this.value)"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Eğitim Öğretim Yılı <span class="text-slate-400 font-normal">(B4)</span></label>
+            <input type="text" value="${escapeHtml(c.academicYear)}"
+              oninput="updateCourseField('academicYear', this.value)"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kurs Öğretmeni Adı Soyadı <span class="text-slate-400 font-normal">(E8)</span></label>
+            <input type="text" placeholder="Örn: Ayşe KARADENİZ" value="${escapeHtml(c.teacherName)}"
+              oninput="updateCourseField('teacherName', this.value)"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kurs Adı <span class="text-slate-400 font-normal">(E9)</span></label>
+            <input type="text" placeholder="Örn: Bilgisayar İşletmenliği (Operatörlüğü)" value="${escapeHtml(c.courseName)}"
+              oninput="updateCourseField('courseName', this.value)"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kurs Günleri <span class="text-slate-400 font-normal">(E10)</span></label>
+            <input type="text" placeholder="Örn: Pazartesi - Çarşamba - Cuma" value="${escapeHtml(c.courseDays)}"
+              oninput="updateCourseField('courseDays', this.value)"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Toplam Saat <span class="text-slate-400 font-normal">(E11)</span></label>
+              <input type="number" min="1" max="2000" placeholder="160" value="${escapeHtml(c.totalHours)}"
+                oninput="updateCourseField('totalHours', this.value)"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm font-semibold focus:ring-2 focus:ring-navy-600 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Kurs Numarası <span class="text-slate-400 font-normal">(E12)</span></label>
+              <input type="text" placeholder="2026-5301" value="${escapeHtml(c.courseNumber)}"
+                oninput="updateCourseField('courseNumber', this.value)"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm font-mono focus:ring-2 focus:ring-navy-600 outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Başlama Tarihi <span class="text-slate-400 font-normal">(E13)</span></label>
+            <input type="date" value="${escapeHtml(c.startDate)}"
+              oninput="updateCourseField('startDate', this.value)"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Bitiş Tarihi <span class="text-slate-400 font-normal">(E14)</span></label>
+            <input type="date" value="${escapeHtml(c.endDate)}"
+              oninput="updateCourseField('endDate', this.value)"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Modül Sayısı (1-25) <span class="text-slate-400 font-normal">(E15)</span></label>
+              <input type="number" min="1" max="25" value="${escapeHtml(c.moduleCount)}"
+                oninput="updateCourseField('moduleCount', this.value)"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm font-bold text-navy-800 focus:ring-2 focus:ring-navy-600 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Geçer Not <span class="text-slate-400 font-normal">(E16)</span></label>
+              <input type="number" min="1" max="100" value="${escapeHtml(c.passingGrade)}"
+                oninput="updateCourseField('passingGrade', this.value)"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm font-bold text-rose-700 focus:ring-2 focus:ring-navy-600 outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kurs Yeri Adresi <span class="text-slate-400 font-normal">(E17)</span></label>
+            <input type="text" value="${escapeHtml(c.address)}"
+              oninput="updateCourseField('address', this.value)"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Sorumlu Müdür Yardımcısı <span class="text-slate-400 font-normal">(E19)</span></label>
+            <input type="text" value="${escapeHtml(c.vicePrincipal)}"
+              oninput="updateCourseField('vicePrincipal', this.value)"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kurum Müdürü <span class="text-slate-400 font-normal">(E20)</span></label>
+            <input type="text" value="${escapeHtml(c.principal)}"
+              oninput="updateCourseField('principal', this.value)"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+          </div>
+        </div>
+      `;
+    }
+
+    function updateCourseField(field, value) {
+      if (field === 'moduleCount') {
+        const parsed = parseInt(value, 10);
+        state.course.moduleCount = isNaN(parsed) ? 1 : Math.max(1, Math.min(MAX_MODULES, parsed));
+        ensureModuleArrayLength();
+      } else if (field === 'totalHours' || field === 'passingGrade') {
+        state.course[field] = value === '' ? '' : Number(value);
+      } else {
+        state.course[field] = value;
+      }
+      saveState();
+    }
+
+    // =========================================================================
+    // 5. ADIM 2: KURSİYERLER (KURSİYERLER: E6:G30)
+    // =========================================================================
+    function renderStep2() {
+      const count = state.trainees.length;
+      const femaleCount = state.trainees.filter(t => t.gender === 'Bayan').length;
+      const maleCount = count - femaleCount;
+
+      return `
+        <div class="mb-5 pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-navy-900">2. Kursiyer Listesi</h2>
+            <p class="text-sm text-slate-500 mt-0.5">En fazla 25 kursiyer eklenebilir. <strong>KURSİYERLER</strong> sayfasında <strong>E6:G30</strong> aralığına yazılır.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+              Toplam: ${count} / ${MAX_TRAINEES} (Bayan: ${femaleCount}, Erkek: ${maleCount})
+            </span>
+            <button type="button" onclick="openBulkPasteModal()" ${count >= MAX_TRAINEES ? 'disabled' : ''}
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-sky-600 hover:bg-sky-700 text-white disabled:opacity-40 transition shadow-sm">
+              Toplu İsim Yapıştır
+            </button>
+            <button type="button" onclick="addTrainee()" ${count >= MAX_TRAINEES ? 'disabled' : ''}
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-navy-700 hover:bg-navy-800 text-white disabled:opacity-40 transition shadow-sm">
+              + Kursiyer Ekle
+            </button>
+          </div>
+        </div>
+
+        ${count === 0 ? `
+          <div class="py-12 text-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50">
+            <p class="text-sm font-semibold text-slate-700">Henüz kursiyer eklenmedi.</p>
+            <p class="text-xs text-slate-500 mt-1">Tek tek ekleyebilir veya e-Yaygın / Excel listenizden toplu yapıştırabilirsiniz.</p>
+            <div class="mt-4 flex justify-center gap-2">
+              <button type="button" onclick="addTrainee()" class="px-4 py-2 rounded-xl bg-navy-700 text-white text-xs font-semibold hover:bg-navy-800">+ İlk Kursiyeri Ekle</button>
+              <button type="button" onclick="openBulkPasteModal()" class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100">Toplu Yapıştır</button>
+            </div>
+          </div>
+        ` : `
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-slate-100 text-slate-700 text-xs uppercase font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="px-3 py-3 w-12 text-center">S.No</th>
+                  <th class="px-3 py-3">Adı - Soyadı (E)</th>
+                  <th class="px-3 py-3 w-44">T.C. İlk 4 Rakam (F)</th>
+                  <th class="px-3 py-3 w-36">Cinsiyet (G)</th>
+                  <th class="px-3 py-3 w-16 text-center">Sil</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 bg-white">
+                ${state.trainees.map((t, idx) => `
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-2 text-center text-xs font-bold text-slate-400">${idx + 1}</td>
+                    <td class="px-3 py-2">
+                      <input type="text" placeholder="Ad Soyad" value="${escapeHtml(t.fullName)}"
+                        oninput="updateTrainee(${idx}, 'fullName', this.value)"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-navy-600 outline-none" />
+                    </td>
+                    <td class="px-3 py-2">
+                      <input type="text" maxlength="4" placeholder="1234" value="${escapeHtml(t.tcFirst4)}"
+                        oninput="updateTrainee(${idx}, 'tcFirst4', this.value.replace(/[^0-9]/g, '').slice(0, 4))"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-mono focus:ring-2 focus:ring-navy-600 outline-none" />
+                    </td>
+                    <td class="px-3 py-2">
+                      <select onchange="updateTrainee(${idx}, 'gender', this.value)"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-navy-600 outline-none">
+                        <option value="Bayan" ${t.gender === 'Bayan' ? 'selected' : ''}>Bayan</option>
+                        <option value="Erkek" ${t.gender === 'Erkek' ? 'selected' : ''}>Erkek</option>
+                      </select>
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                      <button type="button" onclick="removeTrainee(${idx})" title="Kursiyeri Sil"
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `}
+      `;
+    }
+
+    function addTrainee() {
+      if (state.trainees.length >= MAX_TRAINEES) {
+        showToast('En fazla 25 kursiyer ekleyebilirsiniz.', 'warning');
+        return;
+      }
+      state.trainees.push({ fullName: '', tcFirst4: '', gender: 'Bayan' });
+      saveState();
+      render();
+    }
+
+    function updateTrainee(idx, field, value) {
+      if (!state.trainees[idx]) return;
+      state.trainees[idx][field] = value;
+      saveState();
+    }
+
+    function removeTrainee(idx) {
+      state.trainees.splice(idx, 1);
+
+      // İndeks kaymasını önlemek için muafDevamsiz, writtenGrades ve appScores haritalarını güncelle
+      const newMd = {};
+      Object.keys(state.muafDevamsiz).forEach(k => {
+        const [t, m] = k.split('_').map(Number);
+        if (t < idx) newMd[k] = state.muafDevamsiz[k];
+        else if (t > idx) newMd[`${t - 1}_${m}`] = state.muafDevamsiz[k];
+      });
+      state.muafDevamsiz = newMd;
+
+      const newW = {};
+      Object.keys(state.writtenGrades).forEach(k => {
+        const [m, t] = k.split('_').map(Number);
+        if (t < idx) newW[k] = state.writtenGrades[k];
+        else if (t > idx) newW[`${m}_${t - 1}`] = state.writtenGrades[k];
+      });
+      state.writtenGrades = newW;
+
+      const newApp = {};
+      Object.keys(state.appScores).forEach(k => {
+        const [m, t, c] = k.split('_').map(Number);
+        if (t < idx) newApp[k] = state.appScores[k];
+        else if (t > idx) newApp[`${m}_${t - 1}_${c}`] = state.appScores[k];
+      });
+      state.appScores = newApp;
+
+      saveState();
+      render();
+    }
+
+    function openBulkPasteModal() {
+      const modal = document.getElementById('bulkPasteModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeBulkPasteModal() {
+      const modal = document.getElementById('bulkPasteModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function applyBulkPaste() {
+      const textarea = document.getElementById('bulkPasteTextarea');
+      const defaultGender = document.getElementById('bulkDefaultGender').value || 'Bayan';
+      const lines = (textarea.value || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length === 0) {
+        showToast('Yapıştırılacak geçerli satır bulunamadı.', 'warning');
+        return;
+      }
+
+      let added = 0;
+      for (const line of lines) {
+        if (state.trainees.length >= MAX_TRAINEES) break;
+        const parts = line.split(/[\t,;]+/).map(p => p.trim()).filter(Boolean);
+        const fullName = parts[0] || '';
+        if (!fullName) continue;
+        let tcFirst4 = '';
+        let gender = defaultGender;
+
+        for (let i = 1; i < parts.length; i++) {
+          const p = parts[i];
+          if (/^\d{4,11}$/.test(p) && !tcFirst4) {
+            tcFirst4 = p.slice(0, 4);
+          } else if (/^(e|erkek)$/i.test(p)) {
+            gender = 'Erkek';
+          } else if (/^(k|b|kadın|kadin|bayan)$/i.test(p)) {
+            gender = 'Bayan';
+          }
+        }
+        state.trainees.push({ fullName, tcFirst4, gender });
+        added++;
+      }
+
+      textarea.value = '';
+      closeBulkPasteModal();
+      saveState();
+      render();
+      showToast(`${added} kursiyer listeye eklendi.`, 'success');
+    }
+
+    // =========================================================================
+    // 6. ADIM 3: MODÜLLER (MODÜLLER: Satır 4..28)
+    // =========================================================================
+    function renderStep3() {
+      const mCount = state.course.moduleCount;
+      const totalCourseHours = parseFloat(state.course.totalHours) || 0;
+      let sumModHours = 0;
+      for (let i = 0; i < mCount; i++) {
+        sumModHours += parseFloat(state.modules[i].hours) || 0;
+      }
+      const hoursMismatch = totalCourseHours > 0 && sumModHours !== totalCourseHours;
+
+      return `
+        <div class="mb-5 pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-navy-900">3. Kurs Modül Bilgileri</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Adım 1'de seçilen <strong>${mCount} modül</strong> için ad, saat, sınav tarihi ve değerlendirme şeklini belirleyin.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-3 py-1.5 rounded-xl text-xs font-bold border ${
+              hoursMismatch
+                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+            }">
+              Modül Saat Toplamı: ${sumModHours} ${totalCourseHours > 0 ? `/ ${totalCourseHours} Saat` : 'Saat'} ${hoursMismatch ? '⚠' : '✓'}
+            </span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-3 py-3 w-12 text-center">No</th>
+                <th class="px-3 py-3 min-w-[200px]">Modül Adı (C)</th>
+                <th class="px-3 py-3 w-24">Saat (D)</th>
+                <th class="px-3 py-3 w-36">Sınav Tarihi (R)</th>
+                <th class="px-3 py-3 w-28">Saat : Dk (S/U)</th>
+                <th class="px-3 py-3 w-24 text-center">Yazılı (V)</th>
+                <th class="px-3 py-3 w-36">2. Sınav Şekli (W)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 bg-white">
+              ${Array.from({ length: mCount }, (_, i) => {
+                const mod = state.modules[i];
+                return `
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-2.5 text-center font-bold text-navy-700">${i + 1}</td>
+                    <td class="px-3 py-2.5">
+                      <input type="text" placeholder="Modül ${i + 1} Adı" value="${escapeHtml(mod.name)}"
+                        oninput="updateModuleField(${i}, 'name', this.value)"
+                        class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-navy-600 outline-none" />
+                    </td>
+                    <td class="px-3 py-2.5">
+                      <input type="number" min="0" max="1000" placeholder="40" value="${escapeHtml(mod.hours)}"
+                        oninput="updateModuleField(${i}, 'hours', this.value)"
+                        class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-center focus:ring-2 focus:ring-navy-600 outline-none" />
+                    </td>
+                    <td class="px-3 py-2.5">
+                      <input type="date" value="${escapeHtml(mod.examDate)}"
+                        oninput="updateModuleField(${i}, 'examDate', this.value)"
+                        class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-navy-600 outline-none" />
+                    </td>
+                    <td class="px-3 py-2.5">
+                      <div class="flex items-center gap-1">
+                        <input type="number" min="0" max="23" value="${escapeHtml(mod.examHour)}"
+                          oninput="updateModuleField(${i}, 'examHour', this.value)"
+                          class="w-12 rounded-lg border border-slate-300 px-1.5 py-1.5 text-xs text-center focus:ring-2 focus:ring-navy-600 outline-none" />
+                        <span class="font-bold text-slate-400">:</span>
+                        <input type="number" min="0" max="59" value="${escapeHtml(mod.examMinute)}"
+                          oninput="updateModuleField(${i}, 'examMinute', this.value)"
+                          class="w-12 rounded-lg border border-slate-300 px-1.5 py-1.5 text-xs text-center focus:ring-2 focus:ring-navy-600 outline-none" />
+                      </div>
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                      <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                        <input type="checkbox" ${mod.hasWritten ? 'checked' : ''}
+                          onchange="updateModuleField(${i}, 'hasWritten', this.checked)"
+                          class="w-4 h-4 rounded border-slate-300 text-navy-700 focus:ring-navy-600" />
+                        <span class="font-semibold text-slate-700">YAZILI</span>
+                      </label>
+                    </td>
+                    <td class="px-3 py-2.5">
+                      <select onchange="updateModuleField(${i}, 'secondExamType', this.value)"
+                        class="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs bg-white focus:ring-2 focus:ring-navy-600 outline-none">
+                        <option value="" ${mod.secondExamType === '' ? 'selected' : ''}>Yok</option>
+                        <option value="UYGULAMA" ${mod.secondExamType === 'UYGULAMA' ? 'selected' : ''}>UYGULAMA</option>
+                        <option value="SÖZLÜ" ${mod.secondExamType === 'SÖZLÜ' ? 'selected' : ''}>SÖZLÜ</option>
+                        <option value="ÖDEV" ${mod.secondExamType === 'ÖDEV' ? 'selected' : ''}>ÖDEV</option>
+                        <option value="PROJE" ${mod.secondExamType === 'PROJE' ? 'selected' : ''}>PROJE</option>
+                      </select>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function updateModuleField(idx, field, value) {
+      if (!state.modules[idx]) return;
+      if (field === 'hours' || field === 'examHour' || field === 'examMinute') {
+        state.modules[idx][field] = value === '' ? '' : Number(value);
+      } else {
+        state.modules[idx][field] = value;
+      }
+      saveState();
+      if (field === 'hours' || field === 'hasWritten' || field === 'secondExamType') {
+        render();
+      }
+    }
+
+    // =========================================================================
+    // 7. ADIM 4: MUAF VE DEVAMSIZ MATRİSİ (MUAF-DEVAMSIZ: G14:AE38)
+    // =========================================================================
+    function renderStep4() {
+      const mCount = state.course.moduleCount;
+      const tCount = state.trainees.length;
+
+      if (tCount === 0) {
+        return `
+          <div class="text-center py-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+            Muaf veya devamsız işaretleyebilmek için önce <strong>Adım 2</strong>'den kursiyer eklemelisiniz.
+            <div class="mt-3">
+              <button type="button" onclick="goToStep(2)" class="px-4 py-2 rounded-xl bg-navy-700 text-white text-xs font-semibold">Kursiyer Ekle</button>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="mb-5 pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h2 class="text-xl font-bold text-navy-900">4. Muaf ve Devamsız Kursiyer Girişi</h2>
+            <p class="text-sm text-slate-500 mt-0.5">İlgili modülden <strong>Muaf</strong> veya <strong>Devamsız</strong> olan kursiyerleri işaretleyin. Normal devam edenleri boş bırakın.</p>
+          </div>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-navy-50 text-navy-700 border border-navy-200 self-start">
+            MUAF-DEVAMSIZ Sayfası
+          </span>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-xs text-left border-collapse">
+            <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-3 py-3 sticky left-0 bg-slate-100 z-10 min-w-[190px] border-r border-slate-200">Kursiyer</th>
+                ${Array.from({ length: mCount }, (_, m) => `
+                  <th class="px-2 py-2.5 text-center min-w-[110px] border-r border-slate-200" title="${escapeHtml(state.modules[m].name)}">
+                    <div class="font-bold text-navy-800">Modül ${m + 1}</div>
+                    <div class="text-[10px] font-normal text-slate-500 truncate max-w-[100px] mx-auto">${escapeHtml(state.modules[m].name || '—')}</div>
+                  </th>
+                `).join('')}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 bg-white">
+              ${state.trainees.map((t, tIdx) => `
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-2 font-medium text-slate-800 sticky left-0 bg-white border-r border-slate-200">
+                    <span class="text-slate-400 mr-1">${tIdx + 1}.</span>${escapeHtml(t.fullName || 'İsimsiz')}
+                  </td>
+                  ${Array.from({ length: mCount }, (_, mIdx) => {
+                    const val = state.muafDevamsiz[`${tIdx}_${mIdx}`] || '';
+                    const selClass = val === 'Muaf'
+                      ? 'bg-sky-50 text-sky-800 border-sky-300 font-bold'
+                      : val === 'Devamsız'
+                        ? 'bg-rose-50 text-rose-800 border-rose-300 font-bold'
+                        : 'bg-white text-slate-600 border-slate-200';
+                    return `
+                      <td class="p-1.5 text-center border-r border-slate-100">
+                        <select onchange="setMuafDevamsiz(${tIdx}, ${mIdx}, this.value)"
+                          class="w-full rounded-lg border px-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-navy-600 ${selClass}">
+                          <option value="" ${val === '' ? 'selected' : ''}>—</option>
+                          <option value="Muaf" ${val === 'Muaf' ? 'selected' : ''}>Muaf</option>
+                          <option value="Devamsız" ${val === 'Devamsız' ? 'selected' : ''}>Devamsız</option>
+                        </select>
+                      </td>
+                    `;
+                  }).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function setMuafDevamsiz(tIdx, mIdx, value) {
+      const key = `${tIdx}_${mIdx}`;
+      if (!value) delete state.muafDevamsiz[key];
+      else state.muafDevamsiz[key] = value;
+      saveState();
+      render();
+    }
+
+    // =========================================================================
+    // 8. ADIM 5: YAZILI SINAV NOTLARI (KURS SONU SINAV TUTANAKLARI)
+    // =========================================================================
+    function renderStep5() {
+      const mCount = state.course.moduleCount;
+      const tCount = state.trainees.length;
+
+      if (tCount === 0) {
+        return `
+          <div class="text-center py-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+            Yazılı sınav notu girebilmek için önce <strong>Adım 2</strong>'den kursiyer eklemelisiniz.
+            <div class="mt-3">
+              <button type="button" onclick="goToStep(2)" class="px-4 py-2 rounded-xl bg-navy-700 text-white text-xs font-semibold">Kursiyer Ekle</button>
+            </div>
+          </div>
+        `;
+      }
+
+      const writtenModuleIndices = [];
+      for (let i = 0; i < mCount; i++) {
+        if (state.modules[i].hasWritten) writtenModuleIndices.push(i);
+      }
+
+      if (writtenModuleIndices.length === 0) {
+        return `
+          <div class="mb-5 pb-4 border-b border-slate-200">
+            <h2 class="text-xl font-bold text-navy-900">5. Yazılı Sınav Notları</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Bu adım yalnızca <strong>YAZILI</strong> sınav seçili modülleri listeler.</p>
+          </div>
+          <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+            <p class="text-sm font-semibold text-slate-700">Yazılı sınav tanımlı modül bulunmuyor.</p>
+            <p class="text-xs text-slate-500 mt-1">Adım 3'te yazılı sınavı olan modülleri işaretleyebilir veya doğrudan sonraki adıma geçebilirsiniz.</p>
+            <div class="mt-4 flex justify-center gap-2">
+              <button type="button" onclick="goToStep(3)" class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100">Modül Ayarlarına Dön</button>
+              <button type="button" onclick="goToStep(6)" class="px-4 py-2 rounded-xl bg-navy-700 text-white text-xs font-semibold hover:bg-navy-800">Uygulama Notlarına Geç</button>
+            </div>
+          </div>
+        `;
+      }
+
+      if (!writtenModuleIndices.includes(state.activeGradeModuleIdx)) {
+        state.activeGradeModuleIdx = writtenModuleIndices[0];
+      }
+      const mIdx = state.activeGradeModuleIdx;
+      const mod = state.modules[mIdx];
+
+      return `
+        <div class="mb-5 pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h2 class="text-xl font-bold text-navy-900">5. Yazılı Sınav Notları</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Yalnızca <strong>YAZILI</strong> sınav seçilen modüller listelenir. <strong>KURS SONU SINAV TUTANAKLARI</strong> sayfasına yazılır.</p>
+          </div>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-navy-50 text-navy-700 border border-navy-200 self-start">
+            ${writtenModuleIndices.length} Yazılı Modül
+          </span>
+        </div>
+
+        <!-- Yazılı Modül Sekmeleri -->
+        <div class="flex flex-wrap gap-2 mb-5">
+          ${writtenModuleIndices.map(i => {
+            const mObj = state.modules[i];
+            const active = i === mIdx;
+            return `
+              <button type="button" onclick="selectGradeModule(${i})"
+                class="px-3.5 py-2 rounded-xl text-xs font-semibold border transition flex items-center gap-2 ${active ? 'bg-navy-700 text-white border-navy-800 shadow-sm' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}">
+                <span>Modül ${i + 1}</span>
+                <span class="max-w-[140px] truncate opacity-80 font-normal">${escapeHtml(mObj.name || 'İsimsiz')}</span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+
+        <!-- Aktif Modül Bilgi Şeridi -->
+        <div class="mb-5 p-4 rounded-xl bg-navy-50 border border-navy-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <div class="text-sm font-bold text-navy-900">Modül ${mIdx + 1}: ${escapeHtml(mod.name || 'İsimsiz Modül')}</div>
+            <div class="text-xs text-slate-600 mt-0.5">
+              Excel Hedef Satırları: <strong>F${13 + mIdx * 52}:F${13 + mIdx * 52 + tCount - 1}</strong> • Geçer Not: <strong>${escapeHtml(state.course.passingGrade)}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-slate-100 text-slate-700 text-xs uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-3 py-2.5 w-12 text-center">#</th>
+                <th class="px-3 py-2.5">Kursiyer</th>
+                <th class="px-3 py-2.5 w-40">Yazılı Puan (0-100)</th>
+                <th class="px-3 py-2.5">Hızlı Durum / Kilit</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 bg-white">
+              ${state.trainees.map((t, tIdx) => {
+                const key = `${mIdx}_${tIdx}`;
+                const val = state.writtenGrades[key] !== undefined ? state.writtenGrades[key] : '';
+                const md = state.muafDevamsiz[`${tIdx}_${mIdx}`] || '';
+                const isTextStatus = ['GİRMEDİ', 'DEVAMSIZ', 'MUAF'].includes(String(val));
+
+                return `
+                  <tr class="${md ? 'bg-slate-50/90' : 'hover:bg-slate-50'}">
+                    <td class="px-3 py-2 text-center text-xs text-slate-400 font-semibold">${tIdx + 1}</td>
+                    <td class="px-3 py-2 font-medium text-slate-800">${escapeHtml(t.fullName || 'İsimsiz')}</td>
+                    <td class="px-3 py-2">
+                      ${md ? `
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border ${md === 'Muaf' ? 'bg-sky-100 text-sky-800 border-sky-200' : 'bg-rose-100 text-rose-800 border-rose-200'}">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                          Adım 4: ${md}
+                        </span>
+                      ` : `
+                        <input type="text" placeholder="0 - 100" value="${escapeHtml(val)}"
+                          oninput="updateWrittenGrade(${mIdx}, ${tIdx}, this.value)"
+                          class="w-full rounded-lg border px-3 py-1.5 text-sm font-semibold focus:ring-2 focus:ring-navy-600 outline-none ${isTextStatus ? 'bg-amber-50 border-amber-300 text-amber-800' : 'border-slate-300 text-slate-800'}" />
+                      `}
+                    </td>
+                    <td class="px-3 py-2">
+                      ${md ? `
+                        <span class="text-xs text-slate-500">Adım 4'te <strong>${md}</strong> işaretlendiği için not girişi kilitlidir.</span>
+                      ` : `
+                        <div class="flex flex-wrap gap-1">
+                          ${['GİRMEDİ', 'DEVAMSIZ', 'MUAF'].map(st => `
+                            <button type="button" onclick="setWrittenQuickStatus(${mIdx}, ${tIdx}, '${st}')"
+                              class="px-2.5 py-1 rounded-md text-[11px] font-semibold border transition ${val === st ? 'bg-navy-700 text-white border-navy-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'}">
+                              ${st}
+                            </button>
+                          `).join('')}
+                          ${val !== '' ? `
+                            <button type="button" onclick="setWrittenQuickStatus(${mIdx}, ${tIdx}, '')"
+                              class="px-2 py-1 rounded-md text-[11px] font-medium text-rose-600 hover:bg-rose-50">Temizle</button>
+                          ` : ''}
+                        </div>
+                      `}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function selectGradeModule(mIdx) {
+      state.activeGradeModuleIdx = mIdx;
+      saveState();
+      render();
+    }
+
+    function selectAppModule(mIdx) {
+      state.activeAppModuleIdx = mIdx;
+      saveState();
+      render();
+    }
+
+    function updateWrittenGrade(mIdx, tIdx, value) {
+      const trimmed = value.trim().toUpperCase();
+      if (trimmed === '') {
+        delete state.writtenGrades[`${mIdx}_${tIdx}`];
+      } else if (['GİRMEDİ', 'DEVAMSIZ', 'MUAF'].includes(trimmed)) {
+        state.writtenGrades[`${mIdx}_${tIdx}`] = trimmed;
+      } else {
+        const num = parseFloat(trimmed);
+        if (!isNaN(num)) {
+          state.writtenGrades[`${mIdx}_${tIdx}`] = Math.max(0, Math.min(100, num));
+        } else {
+          state.writtenGrades[`${mIdx}_${tIdx}`] = value;
+        }
+      }
+      saveState();
+    }
+
+    function setWrittenQuickStatus(mIdx, tIdx, status) {
+      if (status === '') delete state.writtenGrades[`${mIdx}_${tIdx}`];
+      else state.writtenGrades[`${mIdx}_${tIdx}`] = status;
+      saveState();
+      render();
+    }
+
+    function addCriterion(mIdx) {
+      const list = ensureAppCriteria(mIdx);
+      if (list.length >= MAX_CRITERIA) return;
+      list.push({ name: `Kriter ${list.length + 1}`, maxScore: 10 });
+      saveState();
+      render();
+    }
+
+    function removeCriterion(mIdx, kIdx) {
+      const list = ensureAppCriteria(mIdx);
+      if (list.length <= 1) return;
+      list.splice(kIdx, 1);
+      const newAppScores = {};
+      Object.keys(state.appScores).forEach(key => {
+        const [m, t, k] = key.split('_').map(Number);
+        if (m !== mIdx) {
+          newAppScores[key] = state.appScores[key];
+        } else if (k < kIdx) {
+          newAppScores[key] = state.appScores[key];
+        } else if (k > kIdx) {
+          newAppScores[`${m}_${t}_${k - 1}`] = state.appScores[key];
+        }
+      });
+      state.appScores = newAppScores;
+      saveState();
+      render();
+    }
+
+    function updateCriterion(mIdx, kIdx, field, value) {
+      const list = ensureAppCriteria(mIdx);
+      list[kIdx][field] = field === 'maxScore' ? (parseFloat(value) || 0) : value;
+      saveState();
+      if (field === 'maxScore') render();
+    }
+
+    function updateAppScore(mIdx, tIdx, kIdx, value) {
+      const key = `${mIdx}_${tIdx}_${kIdx}`;
+      if (value === '') {
+        delete state.appScores[key];
+      } else {
+        const num = parseFloat(value);
+        if (!isNaN(num)) {
+          state.appScores[key] = Math.max(0, Math.min(100, num));
+        }
+      }
+      saveState();
+      const totalEl = document.getElementById(`appTotal_${mIdx}_${tIdx}`);
+      if (totalEl) {
+        const tot = getStudentAppTotal(mIdx, tIdx);
+        totalEl.textContent = tot !== null ? tot : '—';
+      }
+    }
+
+    // =========================================================================
+    // 9. ADIM 6: UYGULAMA DEĞERLENDİRME NOTLARI (UYGULAMA DEĞERLENDİRME ÇİZELGES)
+    // =========================================================================
+    function renderStep6() {
+      const mCount = state.course.moduleCount;
+      const tCount = state.trainees.length;
+
+      if (tCount === 0) {
+        return `
+          <div class="text-center py-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+            Uygulama puanı girebilmek için önce <strong>Adım 2</strong>'den kursiyer eklemelisiniz.
+            <div class="mt-3">
+              <button type="button" onclick="goToStep(2)" class="px-4 py-2 rounded-xl bg-navy-700 text-white text-xs font-semibold">Kursiyer Ekle</button>
+            </div>
+          </div>
+        `;
+      }
+
+      const appModuleIndices = [];
+      for (let i = 0; i < mCount; i++) {
+        if (state.modules[i].secondExamType) appModuleIndices.push(i);
+      }
+
+      if (appModuleIndices.length === 0) {
+        return `
+          <div class="mb-5 pb-4 border-b border-slate-200">
+            <h2 class="text-xl font-bold text-navy-900">6. Uygulama Değerlendirme Notları</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Bu adım yalnızca <strong>UYGULAMA / SÖZLÜ / ÖDEV / PROJE</strong> seçili modülleri listeler.</p>
+          </div>
+          <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+            <p class="text-sm font-semibold text-slate-700">Uygulama / Performans sınavı tanımlı modül bulunmuyor.</p>
+            <p class="text-xs text-slate-500 mt-1">Şablondaki eski örnek veriler indirilecek Excel'de otomatik temizlenecektir. Doğrudan Bitirme & İndir adımına geçebilirsiniz.</p>
+            <div class="mt-4 flex justify-center gap-2">
+              <button type="button" onclick="goToStep(3)" class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100">Modül Ayarlarına Dön</button>
+              <button type="button" onclick="goToStep(7)" class="px-4 py-2 rounded-xl bg-navy-700 text-white text-xs font-semibold hover:bg-navy-800">Bitirme & İndir Adımına Geç</button>
+            </div>
+          </div>
+        `;
+      }
+
+      if (!appModuleIndices.includes(state.activeAppModuleIdx)) {
+        state.activeAppModuleIdx = appModuleIndices[0];
+      }
+      const mIdx = state.activeAppModuleIdx;
+      const mod = state.modules[mIdx];
+      const criteria = ensureAppCriteria(mIdx);
+      const criteriaTotalMax = criteria.reduce((sum, c) => sum + (parseFloat(c.maxScore) || 0), 0);
+
+      return `
+        <div class="mb-5 pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h2 class="text-xl font-bold text-navy-900">6. Uygulama Değerlendirme Notları</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Kriter adlarını, tavan puanlarını (toplam 100) ve kursiyer puanlarını girin. <strong>UYGULAMA DEĞERLENDİRME ÇİZELGES</strong> sayfasına yazılır.</p>
+          </div>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200 self-start">
+            ${appModuleIndices.length} Uygulama Modülü
+          </span>
+        </div>
+
+        <!-- Uygulama Modül Sekmeleri -->
+        <div class="flex flex-wrap gap-2 mb-5">
+          ${appModuleIndices.map(i => {
+            const mObj = state.modules[i];
+            const active = i === mIdx;
+            return `
+              <button type="button" onclick="selectAppModule(${i})"
+                class="px-3.5 py-2 rounded-xl text-xs font-semibold border transition flex items-center gap-2 ${active ? 'bg-navy-700 text-white border-navy-800 shadow-sm' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}">
+                <span>Modül ${i + 1}</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] ${active ? 'bg-white/20 text-white' : 'bg-sky-50 text-sky-700'}">${escapeHtml(mObj.secondExamType)}</span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+
+        <!-- Kriter Başlık ve Toplam Çubuğu -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+          <div>
+            <div class="text-sm font-bold text-navy-900">Modül ${mIdx + 1}: ${escapeHtml(mod.name || 'İsimsiz Modül')} (${escapeHtml(mod.secondExamType)})</div>
+            <div class="text-xs text-slate-500">En fazla 15 değerlendirme kriteri eklenebilir (Sütun F–T).</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded-lg text-xs font-bold border ${criteriaTotalMax === 100 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}">
+              Tavan Puan Toplamı: ${criteriaTotalMax} / 100 ${criteriaTotalMax === 100 ? '✓' : '⚠'}
+            </span>
+            <button type="button" onclick="addCriterion(${mIdx})" ${criteria.length >= MAX_CRITERIA ? 'disabled' : ''}
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-700 text-white disabled:opacity-40 transition">
+              + Kriter Ekle
+            </button>
+          </div>
+        </div>
+
+        <!-- Kriter Tanımları -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 mb-5 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          ${criteria.map((c, k) => `
+            <div class="flex items-center gap-2 bg-white p-2 rounded-lg border border-slate-200">
+              <span class="text-xs font-bold text-slate-400 w-5 text-center">K${k + 1}</span>
+              <input type="text" placeholder="Kriter Adı" value="${escapeHtml(c.name)}"
+                oninput="updateCriterion(${mIdx}, ${k}, 'name', this.value)"
+                class="flex-1 min-w-0 text-xs border border-slate-200 rounded-md px-2 py-1 focus:ring-1 focus:ring-navy-600 outline-none" />
+              <input type="number" min="0" max="100" title="Tavan Puan" value="${escapeHtml(c.maxScore)}"
+                oninput="updateCriterion(${mIdx}, ${k}, 'maxScore', this.value)"
+                class="w-14 text-xs font-bold text-center border border-slate-200 rounded-md px-1 py-1 focus:ring-1 focus:ring-navy-600 outline-none" />
+              ${criteria.length > 1 ? `
+                <button type="button" onclick="removeCriterion(${mIdx}, ${k})" class="text-slate-400 hover:text-rose-600 px-1" title="Kriteri Sil">&times;</button>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Öğrenci x Kriter Puan Tablosu -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-xs text-left border-collapse">
+            <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-3 py-2.5 sticky left-0 bg-slate-100 z-10 min-w-[180px] border-r border-slate-200">Kursiyer</th>
+                ${criteria.map((c, k) => `
+                  <th class="px-2 py-2 text-center min-w-[78px] border-r border-slate-200" title="${escapeHtml(c.name)}">
+                    <div class="font-bold text-navy-800">K${k + 1}</div>
+                    <div class="text-[10px] font-normal text-slate-500">Max: ${escapeHtml(c.maxScore)}</div>
+                  </th>
+                `).join('')}
+                <th class="px-3 py-2.5 text-center bg-navy-50 text-navy-900 min-w-[85px]">Toplam</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 bg-white">
+              ${state.trainees.map((t, tIdx) => {
+                const md = state.muafDevamsiz[`${tIdx}_${mIdx}`] || '';
+                const totalApp = getStudentAppTotal(mIdx, tIdx);
+                return `
+                  <tr class="${md ? 'bg-slate-50/90' : 'hover:bg-slate-50'}">
+                    <td class="px-3 py-2 font-medium text-slate-800 sticky left-0 bg-white border-r border-slate-200">
+                      <span class="text-slate-400 mr-1">${tIdx + 1}.</span>${escapeHtml(t.fullName || 'İsimsiz')}
+                      ${md ? `<span class="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold ${md === 'Muaf' ? 'bg-sky-100 text-sky-800' : 'bg-rose-100 text-rose-800'}">${md}</span>` : ''}
+                    </td>
+                    ${criteria.map((c, k) => {
+                      const sKey = `${mIdx}_${tIdx}_${k}`;
+                      const sVal = state.appScores[sKey] !== undefined ? state.appScores[sKey] : '';
+                      return `
+                        <td class="p-1.5 text-center border-r border-slate-100">
+                          <input type="number" min="0" max="${escapeHtml(c.maxScore)}" value="${escapeHtml(sVal)}"
+                            ${md ? 'disabled' : ''}
+                            oninput="updateAppScore(${mIdx}, ${tIdx}, ${k}, this.value)"
+                            class="w-16 rounded-md border border-slate-300 px-1.5 py-1 text-center text-xs font-semibold focus:ring-2 focus:ring-sky-500 outline-none disabled:bg-slate-100 disabled:text-slate-400" />
+                        </td>
+                      `;
+                    }).join('')}
+                    <td id="appTotal_${mIdx}_${tIdx}" class="px-3 py-2 text-center font-bold bg-navy-50/50 text-navy-900">
+                      ${md ? md : (totalApp !== null ? totalApp : '—')}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function updateCompletion(field, value) {
+      state.completion[field] = Math.max(0, parseInt(value, 10) || 0);
+      saveState();
+      render();
+    }
+
+    // =========================================================================
+    // 10. ADIM 7: KURS BİTİRME ÖZETİ VE EXCEL OLUŞTURMA
+    // =========================================================================
+    function renderStep7() {
+      const hasTemplate = Boolean(templateBuffer);
+      const sizeKb = hasTemplate ? Math.round(templateBuffer.byteLength / 1024) : 0;
+
+      // Bayan / Erkek / Toplam detaylı kurs istatistikleri hesaplama
+      const stats = {
+        registered: { f: 0, m: 0 },
+        passed: { f: 0, m: 0 },
+        devamsiz: { f: 0, m: 0 },
+        failed: { f: 0, m: 0 },
+        cancelled: {
+          f: parseInt(state.completion.cancelledFemale, 10) || 0,
+          m: parseInt(state.completion.cancelledMale, 10) || 0
+        }
+      };
+
+      state.trainees.forEach((t, idx) => {
+        const g = t.gender === 'Erkek' ? 'm' : 'f';
+        stats.registered[g]++;
+        const ev = evaluateStudentOverall(idx);
+        if (ev.overallStatus === 'passed') stats.passed[g]++;
+        else if (ev.overallStatus === 'devamsiz') stats.devamsiz[g]++;
+        else if (ev.overallStatus === 'failed') stats.failed[g]++;
+      });
+
+      const statRows = [
+        { label: 'Toplam Kayıtlı Kursiyer', key: 'registered', badge: 'text-navy-900 font-bold' },
+        { label: 'Başarılı / Belge Alan', key: 'passed', badge: 'text-emerald-700 font-bold' },
+        { label: 'Devamsız', key: 'devamsiz', badge: 'text-rose-700 font-bold' },
+        { label: 'Başarısız', key: 'failed', badge: 'text-amber-700 font-bold' },
+        { label: 'Kaydı İptal Edilen', key: 'cancelled', badge: 'text-slate-600 font-bold' }
+      ];
+
+      return `
+        <div class="mb-6 pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h2 class="text-xl font-bold text-navy-900">7. Kurs Bitirme ve Excel Oluştur</h2>
+            <p class="text-sm text-slate-500 mt-0.5">
+              Kaydı iptal edilen sayıları girin, kurs istatistiklerini doğrulayın ve şablonu yükleyerek hazır <strong>.xlsx</strong> dosyasını indirin.
+            </p>
+          </div>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start">
+            OOXML Cerrahi Yama Motoru
+          </span>
+        </div>
+
+        <!-- Üst Bölüm: Kaydı İptal Girişleri + Canlı İstatistik Tablosu -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+          <div class="lg:col-span-5 p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+            <h3 class="text-sm font-bold text-navy-900">KURS BİTİRME TUTANAĞI — Manuel Alanlar</h3>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Kaydı İptal Edilen Bayan Kursiyer <span class="text-slate-400 font-normal">(F28)</span></label>
+              <input type="number" min="0" max="100" value="${escapeHtml(state.completion.cancelledFemale)}"
+                oninput="updateCompletion('cancelledFemale', this.value)"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold focus:ring-2 focus:ring-navy-600 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Kaydı İptal Edilen Erkek Kursiyer <span class="text-slate-400 font-normal">(H28)</span></label>
+              <input type="number" min="0" max="100" value="${escapeHtml(state.completion.cancelledMale)}"
+                oninput="updateCompletion('cancelledMale', this.value)"
+                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold focus:ring-2 focus:ring-navy-600 outline-none" />
+            </div>
+          </div>
+
+          <div class="lg:col-span-7 rounded-2xl border border-slate-200 overflow-hidden bg-white">
+            <div class="px-4 py-3 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wide text-slate-700">Canlı Kurs İstatistikleri Özeti</h3>
+              <span class="text-[11px] text-slate-500">Modül Sayısı: <strong>${state.course.moduleCount}</strong> • Geçer Not: <strong>${escapeHtml(state.course.passingGrade)}</strong></span>
+            </div>
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                <tr>
+                  <th class="px-4 py-2.5">İstatistik Kalemi</th>
+                  <th class="px-3 py-2.5 text-center w-24">Bayan</th>
+                  <th class="px-3 py-2.5 text-center w-24">Erkek</th>
+                  <th class="px-3 py-2.5 text-center w-24 bg-navy-50/70 text-navy-900">Toplam</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                ${statRows.map(row => {
+                  const f = stats[row.key].f;
+                  const m = stats[row.key].m;
+                  return `
+                    <tr class="hover:bg-slate-50">
+                      <td class="px-4 py-2.5 font-medium text-slate-700">${row.label}</td>
+                      <td class="px-3 py-2.5 text-center text-slate-700">${f}</td>
+                      <td class="px-3 py-2.5 text-center text-slate-700">${m}</td>
+                      <td class="px-3 py-2.5 text-center bg-navy-50/40 ${row.badge}">${f + m}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Alt Bölüm: Şablon Yükleme & Excel İndir -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-7 space-y-4">
+            <div class="p-5 rounded-2xl border-2 ${hasTemplate ? 'border-emerald-300 bg-emerald-50/50' : 'border-dashed border-slate-300 bg-slate-50'} transition"
+              ondragover="event.preventDefault(); this.classList.add('border-navy-600', 'bg-navy-50/40')"
+              ondragleave="this.classList.remove('border-navy-600', 'bg-navy-50/40')"
+              ondrop="handleTemplateDrop(event)">
+
+              ${hasTemplate ? `
+                <div class="flex items-start gap-4">
+                  <div class="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-base font-bold text-emerald-900">${escapeHtml(templateSourceLabel)}</div>
+                    <p class="text-xs text-emerald-700 mt-1">
+                      Boyut: <strong>${sizeKb} KB</strong> • Tüm stiller, çizimler, yazıcı ayarları ve formüller bayt bazında korunacaktır.
+                    </p>
+                    <label class="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 cursor-pointer transition">
+                      Farklı Şablon Seç
+                      <input type="file" accept=".xlsx" class="hidden" onchange="handleTemplateFileInput(event)" />
+                    </label>
+                  </div>
+                </div>
+              ` : `
+                <div class="text-center py-6">
+                  <div class="w-14 h-14 mx-auto rounded-2xl bg-navy-100 text-navy-700 flex items-center justify-center mb-3">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                  </div>
+                  <h3 class="text-sm font-bold text-slate-800">Excel Şablon Dosyasını (.xlsx) Yükleyin</h3>
+                  <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                    Bilgisayarınızdaki güncel <strong>${TEMPLATE_FILENAME}</strong> dosyasını buraya sürükleyip bırakın veya seçin.
+                  </p>
+                  <label class="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-xl text-sm font-semibold bg-navy-700 hover:bg-navy-800 text-white cursor-pointer transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Şablon Dosyası Seç (.xlsx)
+                    <input type="file" accept=".xlsx" class="hidden" onchange="handleTemplateFileInput(event)" />
+                  </label>
+                </div>
+              `}
+            </div>
+
+            <!-- Uyumluluk Rozeti -->
+            <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-start gap-3">
+              <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <div>
+                <div class="font-bold">Eski ve yeni tüm Excel sürümleriyle (Excel 2007-2024, WPS, LibreOffice) %100 uyumlu — şablon biçimlendirmesi korunur</div>
+                <p class="mt-1 text-emerald-800">Dosya yeniden oluşturulmaz ve sharedStrings.xml bozulmaz; yalnızca veri hücreleri inlineStr/sayı olarak yamalanır.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sağ: Son Kontrol & İndir Butonu -->
+          <div class="lg:col-span-5 flex flex-col justify-between p-5 rounded-2xl bg-slate-50 border border-slate-200">
+            <div>
+              <h3 class="text-sm font-bold text-navy-900 mb-3">İndirme Öncesi Kontrol Listesi</h3>
+              <ul class="space-y-2.5 text-xs">
+                <li class="flex items-center justify-between py-1.5 border-b border-slate-200/70">
+                  <span class="text-slate-600">Kurs Adı</span>
+                  <span class="font-semibold text-slate-800 truncate max-w-[180px]">${escapeHtml(state.course.courseName || 'Belirtilmedi')}</span>
+                </li>
+                <li class="flex items-center justify-between py-1.5 border-b border-slate-200/70">
+                  <span class="text-slate-600">Kurs Öğretmeni</span>
+                  <span class="font-semibold text-slate-800 truncate max-w-[180px]">${escapeHtml(state.course.teacherName || 'Belirtilmedi')}</span>
+                </li>
+                <li class="flex items-center justify-between py-1.5 border-b border-slate-200/70">
+                  <span class="text-slate-600">Kayıtlı Kursiyer</span>
+                  <span class="font-semibold text-navy-800">${state.trainees.length} kişi</span>
+                </li>
+                <li class="flex items-center justify-between py-1.5 border-b border-slate-200/70">
+                  <span class="text-slate-600">Aktif Modül Sayısı</span>
+                  <span class="font-semibold text-navy-800">${state.course.moduleCount} modül</span>
+                </li>
+                <li class="flex items-center justify-between py-1.5">
+                  <span class="text-slate-600">Şablon Dosyası</span>
+                  <span class="font-bold ${hasTemplate ? 'text-emerald-600' : 'text-rose-600'}">${hasTemplate ? 'Hazır ✓' : 'Yüklenmedi'}</span>
+                </li>
+              </ul>
+            </div>
+
+            <button type="button" onclick="generateAndDownloadExcel()" ${(!hasTemplate || isGeneratingExcel) ? 'disabled' : ''}
+              class="mt-6 w-full py-3.5 px-5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition shadow-md flex items-center justify-center gap-2">
+              ${isGeneratingExcel ? `
+                <svg class="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                Excel Oluşturuluyor...
+              ` : `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Hazır Excel (.xlsx) Oluştur ve İndir
+              `}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 11. ŞABLON YÜKLEME VE JSZIP CERRAHİ OOXML YAMA MOTORU (inlineStr)
+    // =========================================================================
+    const SHEET_NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+    const REL_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+    const XML_NS = 'http://www.w3.org/XML/1998/namespace';
+
+    async function tryAutoLoadTemplate() {
+      if (templateAutoChecked) return;
+      templateAutoChecked = true;
+      try {
+        const response = await fetch('./' + encodeURI(TEMPLATE_FILENAME));
+        if (response.ok) {
+          const buf = await response.arrayBuffer();
+          if (buf && buf.byteLength > 1000) {
+            templateBuffer = buf;
+            templateSourceLabel = 'Şablon Otomatik Yüklendi ✓';
+            if (state.currentStep === 7) render();
+          }
+        }
+      } catch (err) {
+        console.info('Otomatik şablon yükleme atlandı:', err.message);
+      }
+    }
+
+    function handleTemplateFileInput(event) {
+      const file = event.target.files[0];
+      if (file) loadTemplateFile(file);
+    }
+
+    function handleTemplateDrop(event) {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      if (file) loadTemplateFile(file);
+    }
+
+    async function loadTemplateFile(file) {
+      if (!file.name.toLowerCase().endsWith('.xlsx')) {
+        showToast('Lütfen .xlsx uzantılı Excel şablon dosyasını seçin.', 'error');
+        return;
+      }
+      try {
+        templateBuffer = await file.arrayBuffer();
+        templateSourceLabel = `Şablon Yüklendi: ${file.name} ✓`;
+        showToast('Excel şablonu başarıyla yüklendi.', 'success');
+        render();
+      } catch (err) {
+        console.error(err);
+        showToast('Şablon dosyası okunamadı.', 'error');
+      }
+    }
+
+    /**
+     * 1-tabanlı sütun indeksini Excel harfine çevirir (1->A, 7->G, 31->AE).
+     */
+    function colIndexToLetter(colIdx) {
+      let letter = '';
+      let n = colIdx;
+      while (n > 0) {
+        const rem = (n - 1) % 26;
+        letter = String.fromCharCode(65 + rem) + letter;
+        n = Math.floor((n - 1) / 26);
+      }
+      return letter;
+    }
+
+    /**
+     * Excel sütun harfini 1-tabanlı sayısal indekse çevirir (A->1, AE->31).
+     */
+    function colLetterToIndex(colStr) {
+      let idx = 0;
+      for (let i = 0; i < colStr.length; i++) {
+        idx = idx * 26 + (colStr.charCodeAt(i) - 64);
+      }
+      return idx;
+    }
+
+    /**
+     * "YYYY-MM-DD" tarihini Excel seri gün tamsayısına çevirir.
+     */
+    function dateStrToExcelSerial(dateStr) {
+      if (!dateStr || typeof dateStr !== 'string') return null;
+      const parts = dateStr.split('-').map(Number);
+      if (parts.length !== 3 || parts.some(isNaN)) return null;
+      const utcMs = Date.UTC(parts[0], parts[1] - 1, parts[2]);
+      const epochMs = Date.UTC(1899, 11, 30);
+      return Math.round((utcMs - epochMs) / 86400000);
+    }
+
+    /**
+     * XML metnini güvenli biçimde parse eder; parsererror varsa hata fırlatır.
+     */
+    function parseXmlSafe(parser, xmlText, label) {
+      const doc = parser.parseFromString(xmlText, 'application/xml');
+      const errNode = doc.getElementsByTagName('parsererror')[0];
+      if (errNode) {
+        throw new Error(`${label} XML okunamadı.`);
+      }
+      return doc;
+    }
+
+    /**
+     * XML DOM'unu standart OOXML başlığıyla stringe serileştirir.
+     */
+    function serializeXmlDoc(doc) {
+      let xml = new XMLSerializer().serializeToString(doc);
+      if (!xml.startsWith('<?xml')) {
+        xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + xml;
+      }
+      return xml;
+    }
+
+    /**
+     * XML 1.0 spesifikasyonuna aykırı kontrol karakterlerini temizler.
+     */
+    function sanitizeXmlString(val) {
+      return String(val).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+    }
+
+    /**
+     * Bir worksheet XML DOM'unda yalnızca hedef hücrenin değerini günceller.
+     * xl/sharedStrings.xml dosyasına hiç dokunmaz (t="inlineStr" kullanır),
+     * mevcut `s` (stil) özniteliğini ve formülleri (<f>) asla bozmaz.
+     */
+    function setCell(sheetDoc, colLetter, rowNum, value, type) {
+      const ns = sheetDoc.documentElement.namespaceURI || SHEET_NS;
+      const sheetData = sheetDoc.getElementsByTagNameNS('*', 'sheetData')[0];
+      if (!sheetData) return;
+
+      const targetRowNum = Number(rowNum);
+      const targetColIdx = colLetterToIndex(colLetter);
+      const cellRef = `${colLetter}${targetRowNum}`;
+
+      // 1) İlgili <row r="rowNum"> öğesini bul veya artan satır sırasına göre ekle
+      const existingRows = Array.from(sheetData.childNodes).filter(n => n.nodeType === 1 && n.localName === 'row');
+      let rowEl = null;
+      let insertRowBefore = null;
+      for (const r of existingRows) {
+        const rVal = parseInt(r.getAttribute('r'), 10);
+        if (rVal === targetRowNum) {
+          rowEl = r;
+          break;
+        }
+        if (rVal > targetRowNum && !insertRowBefore) {
+          insertRowBefore = r;
+          break;
+        }
+      }
+      if (!rowEl) {
+        if (value === null || value === undefined || value === '') return;
+        rowEl = sheetDoc.createElementNS(ns, 'row');
+        rowEl.setAttribute('r', String(targetRowNum));
+        if (insertRowBefore) sheetData.insertBefore(rowEl, insertRowBefore);
+        else sheetData.appendChild(rowEl);
+      }
+
+      // 2) İlgili <c r="cellRef"> öğesini bul veya artan sütun sırasına göre ekle
+      const existingCells = Array.from(rowEl.childNodes).filter(n => n.nodeType === 1 && n.localName === 'c');
+      let cellEl = null;
+      let insertCellBefore = null;
+      for (const c of existingCells) {
+        const rAttr = c.getAttribute('r') || '';
+        if (rAttr === cellRef) {
+          cellEl = c;
+          break;
+        }
+        const m = /^([A-Z]+)(\d+)$/.exec(rAttr);
+        if (m) {
+          const cIdx = colLetterToIndex(m[1]);
+          if (cIdx > targetColIdx && !insertCellBefore) {
+            insertCellBefore = c;
+            break;
+          }
+        }
+      }
+      if (!cellEl) {
+        if (value === null || value === undefined || value === '') return;
+        cellEl = sheetDoc.createElementNS(ns, 'c');
+        cellEl.setAttribute('r', cellRef);
+        if (insertCellBefore) rowEl.insertBefore(cellEl, insertCellBefore);
+        else rowEl.appendChild(cellEl);
+        // Yeni sütun eklendiğinde spans aralığının çakışmaması için spans ipucunu kaldır
+        rowEl.removeAttribute('spans');
+      }
+
+      // 3) Formül hücresine asla dokunma
+      const hasFormula = Array.from(cellEl.childNodes).some(n => n.nodeType === 1 && n.localName === 'f');
+      if (hasFormula) return;
+
+      // 4) Mevcut <v>, <is> çocuklarını ve eski değer metaverilerini temizle (`s` stil özniteliğine dokunulmaz!)
+      Array.from(cellEl.childNodes).forEach(n => {
+        if (n.nodeType === 1 && (n.localName === 'v' || n.localName === 'is')) {
+          cellEl.removeChild(n);
+        }
+      });
+      cellEl.removeAttribute('vm');
+      cellEl.removeAttribute('cm');
+
+      // 5) Boş değer ise sadece `t` özniteliğini kaldır ve çık
+      if (value === null || value === undefined || value === '') {
+        cellEl.removeAttribute('t');
+        return;
+      }
+
+      // Varsa <extLst> öğesinden önce ekleme noktası belirle (OOXML şema sırası)
+      const extLstNode = Array.from(cellEl.childNodes).find(n => n.nodeType === 1 && n.localName === 'extLst') || null;
+
+      // 6) Tipe göre yeni değer öğesini yaz
+      if (type === 'number') {
+        const num = Number(value);
+        if (!isFinite(num)) {
+          cellEl.removeAttribute('t');
+          return;
+        }
+        cellEl.removeAttribute('t');
+        const vEl = sheetDoc.createElementNS(ns, 'v');
+        vEl.textContent = String(num);
+        if (extLstNode) cellEl.insertBefore(vEl, extLstNode);
+        else cellEl.appendChild(vEl);
+      } else if (type === 'date') {
+        const serial = dateStrToExcelSerial(value);
+        if (serial === null || !isFinite(serial)) {
+          cellEl.removeAttribute('t');
+          return;
+        }
+        cellEl.removeAttribute('t');
+        const vEl = sheetDoc.createElementNS(ns, 'v');
+        vEl.textContent = String(serial);
+        if (extLstNode) cellEl.insertBefore(vEl, extLstNode);
+        else cellEl.appendChild(vEl);
+      } else {
+        // sharedStrings.xml'e hiç dokunmadan standart OOXML inlineStr kullan
+        const cleanStr = sanitizeXmlString(value);
+        cellEl.setAttribute('t', 'inlineStr');
+        const isEl = sheetDoc.createElementNS(ns, 'is');
+        const tEl = sheetDoc.createElementNS(ns, 't');
+        if (/^\s|\s$|\n|\r/.test(cleanStr)) {
+          tEl.setAttributeNS(XML_NS, 'xml:space', 'preserve');
+        }
+        tEl.textContent = cleanStr;
+        isEl.appendChild(tEl);
+        if (extLstNode) cellEl.insertBefore(isEl, extLstNode);
+        else cellEl.appendChild(isEl);
+      }
+    }
+
+    /**
+     * Sayfa adını workbook.xml + workbook.xml.rels üzerinden dinamik zip yoluna çözer.
+     */
+    function resolveSheetPath(sheetPathMap, exactName, fallbackSubstr) {
+      if (sheetPathMap.has(exactName)) return sheetPathMap.get(exactName);
+      const upperExact = exactName.trim().toUpperCase();
+      for (const [name, path] of sheetPathMap.entries()) {
+        if (name.trim().toUpperCase() === upperExact) return path;
+      }
+      if (fallbackSubstr) {
+        const upperSub = fallbackSubstr.toUpperCase();
+        for (const [name, path] of sheetPathMap.entries()) {
+          if (name.toUpperCase().includes(upperSub)) return path;
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Tüm form verilerini JSZip OOXML yama motoruyla şablondaki ilgili hücrelere yazar ve indirir.
+     */
+    async function generateAndDownloadExcel() {
+      if (!templateBuffer) {
+        showToast('Önce Excel şablon dosyasını (.xlsx) yüklemelisiniz.', 'warning');
+        return;
+      }
+
+      isGeneratingExcel = true;
+      render();
+
+      try {
+        const zip = await JSZip.loadAsync(templateBuffer.slice(0));
+        const parser = new DOMParser();
+
+        // 1) workbook.xml ve workbook.xml.rels çözümlemesi
+        const wbXmlText = await zip.file('xl/workbook.xml').async('string');
+        const relsXmlText = await zip.file('xl/_rels/workbook.xml.rels').async('string');
+        const wbDoc = parseXmlSafe(parser, wbXmlText, 'workbook.xml');
+        const relsDoc = parseXmlSafe(parser, relsXmlText, 'workbook.xml.rels');
+
+        const ridToTarget = new Map();
+        const relNodes = Array.from(relsDoc.getElementsByTagNameNS('*', 'Relationship'));
+        relNodes.forEach(rel => {
+          const id = rel.getAttribute('Id');
+          const target = rel.getAttribute('Target') || '';
+          if (id && target) {
+            let zipPath = target.replace(/^\/+/, '');
+            if (!zipPath.startsWith('xl/')) {
+              zipPath = 'xl/' + zipPath.replace(/^\.\//, '');
+            }
+            ridToTarget.set(id, zipPath);
+          }
+        });
+
+        const sheetPathMap = new Map();
+        const sheetNodes = Array.from(wbDoc.getElementsByTagNameNS('*', 'sheet'));
+        sheetNodes.forEach(s => {
+          const name = s.getAttribute('name') || '';
+          const rid = s.getAttributeNS(REL_NS, 'id') || s.getAttribute('r:id');
+          if (name && rid && ridToTarget.has(rid)) {
+            sheetPathMap.set(name, ridToTarget.get(rid));
+          }
+        });
+
+        async function patchWorksheet(exactName, fallbackSubstr, patchFn) {
+          const path = resolveSheetPath(sheetPathMap, exactName, fallbackSubstr);
+          if (!path || !zip.file(path)) return;
+          const xmlText = await zip.file(path).async('string');
+          const sheetDoc = parseXmlSafe(parser, xmlText, exactName);
+          patchFn(sheetDoc);
+          zip.file(path, serializeXmlDoc(sheetDoc));
+        }
+
+        const mCount = state.course.moduleCount;
+
+        // A) BAŞLIK SAYFASI
+        await patchWorksheet('BAŞLIK', 'BAŞLIK', (doc) => {
+          const c = state.course;
+          setCell(doc, 'B', 2, c.institutionName, 'string');
+          setCell(doc, 'B', 4, c.academicYear, 'string');
+          setCell(doc, 'E', 8, c.teacherName, 'string');
+          setCell(doc, 'E', 9, c.courseName, 'string');
+          setCell(doc, 'E', 10, c.courseDays, 'string');
+          setCell(doc, 'E', 11, c.totalHours, 'number');
+          setCell(doc, 'E', 12, c.courseNumber, 'string');
+          setCell(doc, 'E', 13, c.startDate, 'date');
+          setCell(doc, 'E', 14, c.endDate, 'date');
+          setCell(doc, 'E', 15, mCount, 'number');
+          setCell(doc, 'E', 16, c.passingGrade !== '' ? c.passingGrade : 50, 'number');
+          setCell(doc, 'E', 17, c.address, 'string');
+          setCell(doc, 'E', 19, c.vicePrincipal, 'string');
+          setCell(doc, 'E', 20, c.principal, 'string');
+        });
+
+        // B) KURSİYERLER SAYFASI (E6:G30)
+        await patchWorksheet('KURSİYERLER', 'KURSİYER', (doc) => {
+          for (let i = 0; i < MAX_TRAINEES; i++) {
+            const row = 6 + i;
+            if (i < state.trainees.length) {
+              const t = state.trainees[i];
+              setCell(doc, 'E', row, t.fullName, 'string');
+              if (t.tcFirst4 && !isNaN(Number(t.tcFirst4))) {
+                setCell(doc, 'F', row, Number(t.tcFirst4), 'number');
+              } else {
+                setCell(doc, 'F', row, t.tcFirst4 || null, 'string');
+              }
+              setCell(doc, 'G', row, t.gender, 'string');
+            } else {
+              setCell(doc, 'E', row, null, 'string');
+              setCell(doc, 'F', row, null, 'number');
+              setCell(doc, 'G', row, null, 'string');
+            }
+          }
+        });
+
+        // C) MODÜLLER SAYFASI (Satır 4..28)
+        await patchWorksheet('MODÜLLER', 'MODÜL', (doc) => {
+          for (let m = 0; m < MAX_MODULES; m++) {
+            const r = 4 + m;
+            if (m < mCount) {
+              const mod = state.modules[m];
+              setCell(doc, 'C', r, mod.name, 'string');
+              setCell(doc, 'D', r, mod.hours, 'number');
+              setCell(doc, 'R', r, mod.examDate, 'date');
+              setCell(doc, 'S', r, mod.examHour !== '' && mod.examHour !== null ? mod.examHour : null, 'number');
+              setCell(doc, 'U', r, mod.examMinute !== '' && mod.examMinute !== null ? mod.examMinute : null, 'number');
+              setCell(doc, 'V', r, mod.hasWritten ? 'YAZILI' : null, 'string');
+              setCell(doc, 'W', r, mod.secondExamType ? mod.secondExamType : null, 'string');
+            } else {
+              setCell(doc, 'C', r, null, 'string');
+              setCell(doc, 'D', r, null, 'number');
+              setCell(doc, 'R', r, null, 'date');
+              setCell(doc, 'S', r, null, 'number');
+              setCell(doc, 'U', r, null, 'number');
+              setCell(doc, 'V', r, null, 'string');
+              setCell(doc, 'W', r, null, 'string');
+            }
+          }
+        });
+
+        // D) MUAF-DEVAMSIZ SAYFASI (Satır 14..38, Sütun G..AE / 7..31)
+        await patchWorksheet('MUAF-DEVAMSIZ', 'MUAF', (doc) => {
+          for (let i = 0; i < MAX_TRAINEES; i++) {
+            const rowNum = 14 + i;
+            for (let m = 0; m < MAX_MODULES; m++) {
+              const colLetter = colIndexToLetter(7 + m);
+              if (i < state.trainees.length && m < mCount) {
+                const val = state.muafDevamsiz[`${i}_${m}`];
+                setCell(doc, colLetter, rowNum, (val === 'Muaf' || val === 'Devamsız') ? val : null, 'string');
+              } else {
+                setCell(doc, colLetter, rowNum, null, 'string');
+              }
+            }
+          }
+        });
+
+        // E) KURS SONU SINAV TUTANAKLARI (Sütun F, Satır 13 + m*52 + i)
+        await patchWorksheet('KURS SONU SINAV TUTANAKLARI', 'SINAV TUTANAK', (doc) => {
+          for (let m = 0; m < MAX_MODULES; m++) {
+            const isModActive = m < mCount && state.modules[m].hasWritten;
+            for (let i = 0; i < MAX_TRAINEES; i++) {
+              const rowNum = 13 + m * 52 + i;
+              const md = state.muafDevamsiz[`${i}_${m}`] || '';
+              if (isModActive && i < state.trainees.length && !md) {
+                const rawVal = state.writtenGrades[`${m}_${i}`];
+                if (rawVal === undefined || rawVal === '' || rawVal === null) {
+                  setCell(doc, 'F', rowNum, null, 'number');
+                } else if (typeof rawVal === 'number' || (!isNaN(Number(rawVal)) && String(rawVal).trim() !== '')) {
+                  setCell(doc, 'F', rowNum, Number(rawVal), 'number');
+                } else {
+                  setCell(doc, 'F', rowNum, String(rawVal), 'string');
+                }
+              } else {
+                setCell(doc, 'F', rowNum, null, 'number');
+              }
+            }
+          }
+        });
+
+        // F) UYGULAMA DEĞERLENDİRME ÇİZELGES (Kriter: 7+m*36, Tavan: 8+m*36, Notlar: 9+m*36+i, Sütun F..T)
+        await patchWorksheet('UYGULAMA DEĞERLENDİRME ÇİZELGES', 'UYGULAMA', (doc) => {
+          for (let m = 0; m < MAX_MODULES; m++) {
+            const nameRow = 7 + m * 36;
+            const maxRow = 8 + m * 36;
+            const isModApp = m < mCount && Boolean(state.modules[m].secondExamType);
+            const criteria = isModApp ? ensureAppCriteria(m) : [];
+
+            for (let k = 0; k < MAX_CRITERIA; k++) {
+              const colLetter = colIndexToLetter(6 + k); // F..T
+              const isCritActive = isModApp && k < criteria.length;
+
+              setCell(doc, colLetter, nameRow, isCritActive ? (criteria[k].name || null) : null, 'string');
+              setCell(doc, colLetter, maxRow, isCritActive ? Number(criteria[k].maxScore || 0) : null, 'number');
+
+              for (let i = 0; i < MAX_TRAINEES; i++) {
+                const scoreRow = 9 + m * 36 + i;
+                const md = state.muafDevamsiz[`${i}_${m}`] || '';
+                if (isCritActive && i < state.trainees.length && !md) {
+                  const sVal = state.appScores[`${m}_${i}_${k}`];
+                  const hasNum = sVal !== undefined && sVal !== '' && sVal !== null && !isNaN(Number(sVal));
+                  setCell(doc, colLetter, scoreRow, hasNum ? Number(sVal) : null, 'number');
+                } else {
+                  setCell(doc, colLetter, scoreRow, null, 'number');
+                }
+              }
+            }
+          }
+        });
+
+        // G) KURS BİTİRME TUTANAĞI (F28 ve H28)
+        await patchWorksheet('KURS BİTİRME TUTANAĞI', 'BİTİRME', (doc) => {
+          setCell(doc, 'F', 28, Number(state.completion.cancelledFemale || 0), 'number');
+          setCell(doc, 'H', 28, Number(state.completion.cancelledMale || 0), 'number');
+        });
+
+        // 2) Tüm Excel sürümlerinde temiz formül yeniden hesaplama ayarları
+        const wbNs = wbDoc.documentElement.namespaceURI || SHEET_NS;
+        let calcPr = wbDoc.getElementsByTagNameNS('*', 'calcPr')[0];
+        if (!calcPr) {
+          calcPr = wbDoc.createElementNS(wbNs, 'calcPr');
+          const wbExtLst = Array.from(wbDoc.documentElement.childNodes).find(n => n.nodeType === 1 && n.localName === 'extLst') || null;
+          if (wbExtLst) wbDoc.documentElement.insertBefore(calcPr, wbExtLst);
+          else wbDoc.documentElement.appendChild(calcPr);
+        }
+        calcPr.setAttribute('fullCalcOnLoad', '1');
+        zip.file('xl/workbook.xml', serializeXmlDoc(wbDoc));
+
+        // calcChain.xml dosyasını büyük/küçük harf duyarsız temizle
+        Object.keys(zip.files).forEach(filePath => {
+          if (filePath.toLowerCase() === 'xl/calcchain.xml') {
+            zip.remove(filePath);
+          }
+        });
+
+        let relsModified = false;
+        relNodes.forEach(rel => {
+          const target = (rel.getAttribute('Target') || '').toLowerCase();
+          if (target.endsWith('calcchain.xml')) {
+            if (rel.parentNode) rel.parentNode.removeChild(rel);
+            relsModified = true;
+          }
+        });
+        if (relsModified) {
+          zip.file('xl/_rels/workbook.xml.rels', serializeXmlDoc(relsDoc));
+        }
+
+        const ctFile = zip.file('[Content_Types].xml');
+        if (ctFile) {
+          const ctText = await ctFile.async('string');
+          const ctDoc = parseXmlSafe(parser, ctText, '[Content_Types].xml');
+          let ctModified = false;
+          const overrides = Array.from(ctDoc.getElementsByTagNameNS('*', 'Override'));
+          overrides.forEach(ov => {
+            const partName = (ov.getAttribute('PartName') || '').toLowerCase();
+            if (partName === '/xl/calcchain.xml') {
+              if (ov.parentNode) ov.parentNode.removeChild(ov);
+              ctModified = true;
+            }
+          });
+          if (ctModified) {
+            zip.file('[Content_Types].xml', serializeXmlDoc(ctDoc));
+          }
+        }
+
+        // 3) Yalnızca yamalanan XML'lerle yeni .xlsx paketini üret ve indir
+        const blob = await zip.generateAsync({
+          type: 'blob',
+          compression: 'DEFLATE',
+          mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+
+        const safeCourseName = (state.course.courseName || 'Programi')
+          .trim()
+          .replace(/[\\/:*?"<>|]+/g, '')
+          .replace(/\s+/g, '_')
+          .slice(0, 50);
+        const downloadName = `Kurs_Sonu_${safeCourseName || 'Programi'}.xlsx`;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = downloadName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+        showToast(`"${downloadName}" tüm şablon biçimlendirmesi korunarak oluşturuldu.`, 'success');
+      } catch (err) {
+        console.error('Excel oluşturma hatası:', err);
+        showToast('Excel oluşturulurken hata oluştu: ' + (err.message || 'Bilinmeyen hata'), 'error');
+      } finally {
+        isGeneratingExcel = false;
+        render();
+      }
+    }
+
+    // =========================================================================
+    // 12. ÖRNEK VERİ, JSON TASLAK İNDİR/YÜKLE VE FORM TEMİZLEME
+    // =========================================================================
+    function fillSampleData() {
+      state = createDefaultState();
+      state.course = {
+        ...state.course,
+        teacherName: 'Ayşe KARADENİZ',
+        courseName: 'Bilgisayar İşletmenliği (Operatörlüğü)',
+        courseDays: 'Pazartesi - Çarşamba - Cuma',
+        totalHours: 160,
+        courseNumber: '2026-5301',
+        startDate: '2026-10-05',
+        endDate: '2026-12-25',
+        moduleCount: 3,
+        passingGrade: 50
+      };
+      state.trainees = [
+        { fullName: 'Zeynep YILMAZ', tcFirst4: '1234', gender: 'Bayan' },
+        { fullName: 'Mehmet DEMİR', tcFirst4: '2345', gender: 'Erkek' },
+        { fullName: 'Fatma KAYA', tcFirst4: '3456', gender: 'Bayan' },
+        { fullName: 'Ali ÖZTÜRK', tcFirst4: '4567', gender: 'Erkek' },
+        { fullName: 'Elif ŞAHİN', tcFirst4: '5678', gender: 'Bayan' },
+        { fullName: 'Mustafa ÇELİK', tcFirst4: '6789', gender: 'Erkek' }
+      ];
+      state.modules = [
+        { name: 'Bilgisayar Kullanımı ve İşletim Sistemleri', hours: 48, examDate: '2026-11-02', examHour: 10, examMinute: 0, hasWritten: true, secondExamType: '' },
+        { name: 'Kelime İşlemci Programı (Word)', hours: 56, examDate: '2026-11-30', examHour: 13, examMinute: 30, hasWritten: true, secondExamType: 'UYGULAMA' },
+        { name: 'Elektronik Tablolama (Excel)', hours: 56, examDate: '2026-12-23', examHour: 14, examMinute: 0, hasWritten: false, secondExamType: 'UYGULAMA' }
+      ];
+      state.muafDevamsiz = { '4_0': 'Muaf', '5_2': 'Devamsız' };
+      state.writtenGrades = {
+        '0_0': 85, '0_1': 72, '0_2': 90, '0_3': 45, '0_5': 68,
+        '1_0': 88, '1_1': 75, '1_2': 92, '1_3': 60, '1_4': 80, '1_5': 70
+      };
+      state.appCriteria = {
+        '1': [
+          { name: 'Sayfa Düzeni ve Biçimlendirme', maxScore: 25 },
+          { name: 'Tablo ve Grafik Oluşturma', maxScore: 35 },
+          { name: 'Belge Yazdırma ve Kaydetme', maxScore: 40 }
+        ],
+        '2': [
+          { name: 'Temel Formül Kullanımı', maxScore: 30 },
+          { name: 'Koşullu Fonksiyonlar (EĞER vb.)', maxScore: 40 },
+          { name: 'Grafik ve Özet Tablo', maxScore: 30 }
+        ]
+      };
+      state.appScores = {
+        '1_0_0': 25, '1_0_1': 30, '1_0_2': 35,
+        '1_1_0': 20, '1_1_1': 25, '1_1_2': 30,
+        '1_2_0': 25, '1_2_1': 35, '1_2_2': 40,
+        '1_3_0': 15, '1_3_1': 20, '1_3_2': 25,
+        '1_4_0': 20, '1_4_1': 30, '1_4_2': 35,
+        '1_5_0': 15, '1_5_1': 25, '1_5_2': 30,
+        '2_0_0': 28, '2_0_1': 35, '2_0_2': 27,
+        '2_1_0': 22, '2_1_1': 30, '2_1_2': 20,
+        '2_2_0': 30, '2_2_1': 38, '2_2_2': 30,
+        '2_3_0': 15, '2_3_1': 20, '2_3_2': 15,
+        '2_4_0': 25, '2_4_1': 32, '2_4_2': 25
+      };
+      state.completion = { cancelledFemale: 1, cancelledMale: 0 };
+      saveState();
+      render();
+      showToast('Örnek kurs verileri başarıyla dolduruldu.', 'success');
+    }
+
+    function exportDraftJSON() {
+      const dataStr = JSON.stringify(state, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kurs_sonu_taslak_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('Taslak JSON dosyası indirildi.', 'success');
+    }
+
+    function importDraftJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const def = createDefaultState();
+          state = {
+            ...def,
+            ...parsed,
+            course: { ...def.course, ...(parsed.course || {}) },
+            completion: { ...def.completion, ...(parsed.completion || {}) },
+            trainees: Array.isArray(parsed.trainees) ? parsed.trainees.slice(0, MAX_TRAINEES) : [],
+            modules: Array.isArray(parsed.modules) && parsed.modules.length > 0 ? parsed.modules : def.modules,
+            muafDevamsiz: parsed.muafDevamsiz || {},
+            writtenGrades: parsed.writtenGrades || {},
+            appCriteria: parsed.appCriteria || {},
+            appScores: parsed.appScores || {}
+          };
+          ensureModuleArrayLength();
+          saveState();
+          render();
+          showToast('JSON taslağı başarıyla yüklendi.', 'success');
+        } catch (err) {
+          showToast('Geçersiz JSON dosyası.', 'error');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function openResetModal() {
+      const modal = document.getElementById('resetModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeResetModal() {
+      const modal = document.getElementById('resetModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function confirmResetForm() {
+      state = createDefaultState();
+      saveState();
+      closeResetModal();
+      render();
+      showToast('Tüm form verileri temizlendi.', 'info');
+    }
+
+    // =========================================================================
+    // 13. BAŞLATMA
+    // =========================================================================
+    window.onload = function () {
+      render();
+      tryAutoLoadTemplate();
+    };
+  </script>
+</body>
+</html>
